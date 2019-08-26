@@ -37,10 +37,7 @@ window.setTimeout(() => {
         }
 
         // Remove icons
-        const ICONS_SELECTORS = [
-            '.Barrage-noble', '.Barrage-icon--roomAdmin',
-            '.FansMedal', '.Medal', '.Motor', '.RoomLevel', '.UserLevel',
-        ].join(',')
+        const ICONS_SELECTORS = '.Barrage-icon, .ChatAchievement, .FansMedal, .Medal, .Motor, .RoomLevel, .UserLevel'
         for (const child of node.querySelectorAll(ICONS_SELECTORS)) {
             child.remove()
         }
