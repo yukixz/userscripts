@@ -11,23 +11,51 @@
 // @run-at      document-idle
 // ==/UserScript==
 
+
 const $ = document.querySelector.bind(document)
 const $$ = document.querySelectorAll.bind(document)
+
 
 window.setTimeout(() => {
 
     // Clear Barrage
     $('#js-barrage-list').addEventListener('DOMNodeInserted', (e) => {
-        const BARRAGE_HIDE_SELECTORS = '.FansMedal, .UserLevel, .RoomLevel, .Motor, .Barrage-noble'
         const node = e.target
-        if (node.tagName === 'LI') {
-            for (const childnode of node.querySelectorAll(BARRAGE_HIDE_SELECTORS)) {
-                childnode.remove()
+        if (node.tagName !== 'LI') {
+            return
+        }
+
+        // Remove system message
+        const SYSTEM_CLASSES = ['Barrage-message', 'Barrage-notice']
+        for (const child of node.children) {
+            for (const cls of SYSTEM_CLASSES) {
+                if (child.classList.contains(cls)) {
+                    node.remove()
+                    return
+                }
+            }
+        }
+
+        // Remove icons
+        const ICONS_SELECTORS = [
+            '.Barrage-noble', '.Barrage-icon--roomAdmin',
+            '.FansMedal', '.Medal', '.Motor', '.RoomLevel', '.UserLevel',
+        ].join(',')
+        for (const child of node.querySelectorAll(ICONS_SELECTORS)) {
+            child.remove()
+        }
+
+        // Replace large barrage with normal
+        const LARGE_CLASSES = ['Barrage-notice--noble', 'Barrage--paddedBarrage']
+        for (const child of node.children) {
+            for (const cls of LARGE_CLASSES) {
+                child.classList.replace(cls, 'Barrage-notice--normalBarrage')
             }
         }
     })
 
 }, 4000);
+
 
 let timer = window.setInterval(() => {
 
