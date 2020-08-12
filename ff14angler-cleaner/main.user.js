@@ -2,7 +2,7 @@
 // @name         饥饿的猫 - 过滤垃圾评论
 // @namespace    https://dazzyd.org/
 // @author       Dazzy Ding
-// @version      0.4
+// @version      0.5
 // @downloadURL  https://raw.githubusercontent.com/yukixz/userscripts/master/ff14angler-cleaner/main.user.js
 // @match        https://*.ff14angler.com/*
 // @grant        none
