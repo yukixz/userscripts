@@ -2,7 +2,7 @@
 // @name         Idle Infinity
 // @namespace    http://dazzyd.org/
 // @version      1.1.0
-// @description  Idle Infinity automation
+// @description  Idle Infinity
 // @author       Dazzy Ding
 // @grant        none
 // @match        https://www.idleinfinity.cn/*
@@ -13,8 +13,8 @@
 // Config
 const config = {
     initial_ms: 2000,
-    interval_ms: 1200,
-    preemptive_times: 5,
+    interval_ms: 1000,
+    preemptive_times: 3,
     max_failed: 10,
 }
 
@@ -119,6 +119,7 @@ function in_map() {
 
 function in_battle() {
     if (document.querySelector('.battle-data') == null) return
+    if (document.querySelector('#modalAuto.in') == null) return
     const btn = document.querySelector('.panel-heading a.btn')
     if (acquire_runable()) {
         btn.click()
