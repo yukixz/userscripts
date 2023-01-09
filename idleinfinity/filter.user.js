@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Item Filter
 // @namespace    http://dazzyd.org/
-// @version      0.1.0
+// @version      0.2.0
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @grant        none
@@ -13,14 +13,14 @@
 // Config
 const config = {
     rules: [
-        ["全部", "武器", ["+ 骑士光环技能", 2]],
-        ["全部", "防具", ["+ 骑士光环技能", 2]],
+        ["全部", "武器", ["+ 骑士光环技能", 3]],
+        ["全部", "防具", ["+ 骑士光环技能", 3]],
         ["全部", "饰品", ["+ 骑士光环技能", 1]],
-        // ["全部", "武器", ["+ 武僧真言技能", 2]],
-        ["全部", "防具", ["+ 武僧真言技能", 2]],
+        ["全部", "武器", ["+ 武僧真言技能", 3]],
+        ["全部", "防具", ["+ 武僧真言技能", 3]],
         ["全部", "饰品", ["+ 武僧真言技能", 1]],
-        // ["全部", "武器", ["+ 死灵召唤技能", 2]],
-        ["全部", "防具", ["+ 死灵召唤技能", 2]],
+        ["全部", "武器", ["+ 死灵召唤技能", 3]],
+        ["全部", "防具", ["+ 死灵召唤技能", 3]],
         ["全部", "饰品", ["+ 死灵召唤技能", 1]],
         ["全部", "武器", ["+ 法师元素技能", 1]],
         ["全部", "防具", ["+ 法师元素技能", 1]],
@@ -29,7 +29,7 @@ const config = {
         ["全部", "防具", ["+ 战士作战技能", 1]],
         ["全部", "饰品", ["+ 战士作战技能", 1]],
         ["全部", "武器", ["+ 游侠辅助技能", 3]],
-        ["全部", "防具", ["+ 游侠辅助技能", 1]],
+        ["全部", "防具", ["+ 游侠辅助技能", 2]],
         ["全部", "饰品", ["+ 游侠辅助技能", 1]],
         ["全部", "武器", ["+ 牧师暗影技能", 1]],
         ["全部", "防具", ["+ 牧师暗影技能", 1]],
@@ -44,7 +44,7 @@ const config = {
         ["全部", "防具", ["+ 贤者自然技能", 1]],
         ["全部", "饰品", ["+ 贤者自然技能", 1]],
         ["全部", "武器", ["+ 猎手陷阱技能", 3]],
-        ["全部", "防具", ["+ 猎手陷阱技能", 1]],
+        ["全部", "防具", ["+ 猎手陷阱技能", 2]],
         ["全部", "饰品", ["+ 猎手陷阱技能", 1]],
 
         ["全部", "手套", ["+% 更佳的机会取得魔法装备", 25]],
@@ -123,8 +123,9 @@ function init() {
     for (const [key, rule] of Object.entries(require_rules)) {
         if (current_rules[key] == null) {
             console.log(`缺少规则：${key}`)
-            confirm(`是否添加规则：${rule}`, () => {
+            confirm(`是否添加规则：\n${rule}`, () => {
                 setInterval(add_rule, 500, rule)
+                add_step = 1
             })
         }
     }
@@ -134,6 +135,9 @@ function init() {
 let add_step = 0
 
 function add_rule(rule) {
+    if (add_step === 0) {
+        return
+    }
     function select_value(dom, value) {
         for (const [index, option] of Object.entries(dom.options)) {
             if (option.text === value) {
@@ -149,28 +153,30 @@ function add_rule(rule) {
     const btn_add_cond = div_modal.querySelector("button.config-magic-add")
     const btn_submit = div_modal.querySelector("button.config-apply")
 
-    if (add_step === 0) {
+    if (add_step === 1) {
         btn_open_modal.click()
         select_value(div_modal.querySelector("select#power"), rule[0])
         select_value(div_modal.querySelector("select#type"), rule[1])
         for (const _ of rule.slice(2)) {
             btn_add_cond.click()
         }
-        add_step = 1
+        add_step = 2
         return
     }
-    if (add_step === 1) {
+    if (add_step === 2) {
         const div_conds = div_modal.querySelectorAll("div.condition")
         for (const [index, [title, value]] of rule.slice(2).entries()) {
             const div = div_conds[index]
             select_value(div.querySelector("select.prefix"), title)
             div.querySelector("input.min").value = value
         }
-        add_step = 2
+        add_step = 3
         return
     }
-    if (add_step === 2) {
+    if (add_step === 3) {
         btn_submit.click()
+        add_step = 0
+        return
     }
 }
 

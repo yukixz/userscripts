@@ -153,35 +153,3 @@ function run() {
 setTimeout(() => {
     setInterval(run, Math.floor(Math.random() * 100 + 400))
 }, config.initial_ms)
-
-
-
-
-function new_title() {
-    if (location.pathname === "/Map/Dungeon") {
-        const seconds = document.querySelector('span.state')
-        if (seconds != null) {
-            return `${location.pathname} SAN:${seconds.textContent}`
-        }
-    }
-    if (location.pathname === "/Battle/InDungeon") {
-        const seconds = document.querySelector('span#time')
-        if (seconds != null) {
-            return `${location.pathname} ET:${seconds.textContent}`
-        }
-    }
-    if (location.pathname.startsWith("/Help/")) {
-        return `${location.pathname}${location.search}`
-    }
-    return location.pathname
-}
-
-function update_title() {
-    document.title = new_title()
-}
-
-
-setTimeout(() => {
-    update_title()
-    setInterval(update_title, 100)
-}, 0)
