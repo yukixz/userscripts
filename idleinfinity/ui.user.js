@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - UI
 // @namespace    http://dazzyd.org/
-// @version      0.2.0
+// @version      0.3.0
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @grant        none
@@ -9,6 +9,11 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=idleinfinity.cn
 // ==/UserScript==
 
+
+/****************************************************************
+ * title
+ * 在标题栏显示页面信息
+ ****************************************************************/
 
 function update_title() {
   let title = location.pathname
@@ -34,17 +39,16 @@ function update_title() {
 setTimeout(update_title, 0)
 
 
-
+/****************************************************************
+ * equipmnent
+ * 在装备名称后增加重要信息标记
+ ****************************************************************/
 
 const store_key = "dd_ui_equip"
 const store = JSON.parse(localStorage.getItem(store_key) || "{}")
-const added = {}
 
-function parse_tips(id, dom) {
+function parse_equip_content(id, dom) {
   if (dom == null) {
-    return
-  }
-  if (store[id] != null) {
     return
   }
 
@@ -62,8 +66,24 @@ function parse_tips(id, dom) {
     content_lines.push(line.innerText.replace(/\s{2,}/g, ''))
   }
   const content = content_lines.join('|')
+
+  store[id] = content
+  localStorage.setItem(store_key, JSON.stringify(store))
+}
+
+function add_tips(id) {
+  if (store[id] == null) {
+    return
+  }
+  const equip = document.querySelector(`span[data-id="${id}"]`)
+  if (equip.childElementCount > 3) {
+    return
+  }
+
   // 通过regexp提取信息
-  const tips = []
+  const content = store[id]
+  const container = document.createElement('span')
+  container.classList.add("tips")
   for (const [regex, suffix, class_name] of [
     [/\+(\d+) .*?(.{2})技能/g, "", "skill"],
     [/攻击速度提升 (\d+)\%/g, "ias", "physical"],
@@ -75,43 +95,27 @@ function parse_tips(id, dom) {
     // [/抗寒 \+(\d+)/, "c", "cold"],
     // [/抗闪电 \+(\d+)/, "l", "lightning"],
     // [/抗毒 \+(\d+)/, "p", "poison"],
-    // [/凹槽(\(\d+\/\d+\))/, "", ""],
+    [/凹槽(\(0\/\d+\))/g, "", ""],
     [/需要等级：(\d+)/g, "rlv", ""],
   ]) {
     const matches = content.matchAll(regex)
     for (const match of matches) {
+      const span = document.createElement('span')
       const value = match.slice(1).join('')
-      tips.push([`${value}${suffix}`, class_name])
+      span.innerText = ' ' + `${value}${suffix}`
+      if (class_name != null && class_name != "") {
+        span.classList.add(class_name)
+      }
+      container.append(span)
     }
   }
-
-  store[id] = tips
-  localStorage.setItem(store_key, JSON.stringify(store))
-}
-
-function add_tips(id) {
-  if (added[id]) {
-    return
-  }
-
-  const tips = store[id]
-  if (tips == null) {
-    return
-  }
-  if (tips.length === 0) {
-    tips.push(["-", ""])
-  }
-
-  const equip = document.querySelector(`span[data-id="${id}"]`)
-  for (const [text, class_name] of tips) {
+  if (container.childElementCount === 0) {
     const span = document.createElement('span')
-    span.innerText = ' ' + text
-    if (class_name != null && class_name != "") {
-      span.classList.add(class_name)
-    }
-    equip.append(span)
+    span.innerText = "-"
+    container.append(span)
   }
-  added[id] = true
+
+  equip.append(container)
 }
 
 function init_tips() {
@@ -127,7 +131,7 @@ function init_tips() {
     }
     const equip_dom = content_dom.previousElementSibling.getElementsByClassName('equip-name')[0]
     const equip_id = equip_dom.attributes['data-id'].value
-    parse_tips(equip_id, content_dom)
+    parse_equip_content(equip_id, content_dom)
     add_tips(equip_id)
   }
   // 解析背包中
@@ -136,7 +140,7 @@ function init_tips() {
       if (mutation.type === 'childList') {
         const dom = mutation.target
         const equip_id = dom.attributes['data-id'].value
-        parse_tips(equip_id, dom)
+        parse_equip_content(equip_id, dom)
         add_tips(equip_id)
         return
       }
@@ -154,7 +158,7 @@ function init_tips() {
   btn_all.innerText = "更新标记"
   document.querySelector(".panel-heading .pull-right").prepend(btn_all)
   btn_all.addEventListener("click", () => {
-    const nodes = Array.from(document.querySelectorAll('.equip-box .equip-name'))
+    const nodes = Array.from(document.querySelectorAll('.equip-name'))
       .filter(dom => dom.childElementCount === 3)
     console.log(`Update ${nodes.length} nodes`)
     for (const [i, dom] of Object.entries(nodes)) {
