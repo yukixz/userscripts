@@ -67,7 +67,7 @@ function add_tips(id) {
     [/抗闪电 \+(\d+)/g, "l", "lightning"],
     [/抗毒 \+(\d+)/g, "p", "poison"],
     [/凹槽(\(0\/\d+\))/g, "", ""],
-    [/双手伤害：/g, "2H", ""],
+//    [/双手伤害：/g, "2H", ""],
 //    [/需要等级：(\d+)/g, "rlv", ""],
   ]) {
     const matches = content.matchAll(regex)
@@ -122,24 +122,24 @@ function init_tips() {
     observer.observe(dom, { childList: true })
   }
   // 增加背包按钮
-  if (location.pathname !== "/Equipment/Query") {
-    return
-  }
-  const btn_all = document.createElement('a')
-  btn_all.classList.add("btn", "btn-xs", "btn-danger")
-  btn_all.innerText = "更新数据"
-  document.querySelector(".panel-heading .pull-right").prepend(btn_all)
-  btn_all.addEventListener("click", () => {
-    const nodes = Array.from(document.querySelectorAll('.equip-name'))
-      .filter(dom => dom.childElementCount === 3)
-    confirm(`预计更新${nodes.length}个装备，是否执行？`, () => {
-      $("#modalConfirm").modal("hide")
-      for (const [i, dom] of Object.entries(nodes)) {
-        setTimeout(() => dom.dispatchEvent(new Event("mouseover")), 10 + i * 888)
-        setTimeout(() => dom.dispatchEvent(new Event("mouseout")), 510 + i * 888)
-      }
-    })
-  })
+  // if (location.pathname !== "/Equipment/Query") {
+  //   return
+  // }
+  // const btn_all = document.createElement('a')
+  // btn_all.classList.add("btn", "btn-xs", "btn-danger")
+  // btn_all.innerText = "更新数据"
+  // document.querySelector(".panel-heading .pull-right").prepend(btn_all)
+  // btn_all.addEventListener("click", () => {
+  //   const nodes = Array.from(document.querySelectorAll('.equip-name'))
+  //     .filter(dom => dom.childElementCount === 3)
+  //   confirm(`预计更新${nodes.length}个装备，是否执行？`, () => {
+  //     $("#modalConfirm").modal("hide")
+  //     for (const [i, dom] of Object.entries(nodes)) {
+  //       setTimeout(() => dom.dispatchEvent(new Event("mouseover")), 10 + i * 888)
+  //       setTimeout(() => dom.dispatchEvent(new Event("mouseout")), 510 + i * 888)
+  //     }
+  //   })
+  // })
 }
 
 setTimeout(init_tips, 0)
