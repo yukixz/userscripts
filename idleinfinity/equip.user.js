@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Idle Infinity - Equipment
 // @namespace    http://dazzyd.org/
-// @version      0.3.0
+// @version      0.3.1
 // @description  Idle Infinity
 // @author       Dazzy Ding
+// @license      MIT
 // @grant        none
 // @match        https://www.idleinfinity.cn/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=idleinfinity.cn
@@ -57,6 +58,8 @@ function add_tips(id) {
   container.classList.add("tips")
   for (const [regex, suffix, class_name] of [
     [/\+(\d+) .*?(.{2})技能/g, "", "skill"],
+    [/\+(\d+) (.+?)最大召唤数量/g, "", "magic"],
+    [/\+(\d+)\% 增强伤害/g, "ed", "physical"],
     [/攻击速度提升 (\d+)\%/g, "ias", "physical"],
     [/施法速度提升 (\d+)\%/g, "fcr", "magic"],
     [/\+(\d+)\% 更佳的机会取得魔法装备/g, "mf", "state"],
