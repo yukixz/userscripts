@@ -68,7 +68,7 @@ function add_tips(id) {
     [/抗毒 \+(\d+)/g, "p", "poison"],
     [/凹槽(\(0\/\d+\))/g, "", ""],
     [/双手伤害：/g, "2H", ""],
-    [/需要等级：(\d+)/g, "rlv", ""],
+//    [/需要等级：(\d+)/g, "rlv", ""],
   ]) {
     const matches = content.matchAll(regex)
     for (const match of matches) {
