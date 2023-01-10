@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Idle Infinity - UI
+// @name         Idle Infinity - Equipment
 // @namespace    http://dazzyd.org/
 // @version      0.3.0
 // @description  Idle Infinity
@@ -8,35 +8,6 @@
 // @match        https://www.idleinfinity.cn/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=idleinfinity.cn
 // ==/UserScript==
-
-
-/****************************************************************
- * title
- * 在标题栏显示页面信息
- ****************************************************************/
-
-function update_title() {
-  let title = location.pathname
-  if (location.pathname === "/Map/Dungeon") {
-    const seconds = document.querySelector('span.state')
-    if (seconds != null) {
-      title = `${location.pathname} SAN:${seconds.textContent}`
-    }
-  }
-  if (location.pathname === "/Battle/InDungeon") {
-    const seconds = document.querySelector('span#time')
-    if (seconds != null) {
-      title = `${location.pathname} ET:${seconds.textContent}`
-    }
-    setTimeout(update_title, 100)
-  }
-  if (location.pathname.startsWith("/Help/")) {
-    title = `${location.pathname}${location.search}`
-  }
-  document.title = title
-}
-
-setTimeout(update_title, 0)
 
 
 /****************************************************************
@@ -75,7 +46,7 @@ function add_tips(id) {
   if (store[id] == null) {
     return
   }
-  const equip = document.querySelector(`span[data-id="${id}"]`)
+  const equip = document.querySelector(`.equip-name[data-id="${id}"]`)
   if (equip.childElementCount > 3) {
     return
   }
@@ -90,19 +61,20 @@ function add_tips(id) {
     [/施法速度提升 (\d+)\%/g, "fcr", "magic"],
     [/\+(\d+)\% 更佳的机会取得魔法装备/g, "mf", "state"],
     [/\+(\d+)\% 额外金币从怪物身上取得/g, "gf", "lightning"],
-    [/元素抗性 \+(\d+)\%/g, "ar", "skill"],
-    // [/抗火 \+(\d+)/, "f", "fire"],
-    // [/抗寒 \+(\d+)/, "c", "cold"],
-    // [/抗闪电 \+(\d+)/, "l", "lightning"],
-    // [/抗毒 \+(\d+)/, "p", "poison"],
+    [/元素抗性 \+(\d+)\%/g, "res", "skill"],
+    [/抗火 \+(\d+)/g, "f", "fire"],
+    [/抗寒 \+(\d+)/g, "c", "cold"],
+    [/抗闪电 \+(\d+)/g, "l", "lightning"],
+    [/抗毒 \+(\d+)/g, "p", "poison"],
     [/凹槽(\(0\/\d+\))/g, "", ""],
+    [/双手伤害：/g, "2H", ""],
     [/需要等级：(\d+)/g, "rlv", ""],
   ]) {
     const matches = content.matchAll(regex)
     for (const match of matches) {
       const span = document.createElement('span')
       const value = match.slice(1).join('')
-      span.innerText = ' ' + `${value}${suffix}`
+      span.innerText = ` ${value}${suffix}`
       if (class_name != null && class_name != "") {
         span.classList.add(class_name)
       }
@@ -120,7 +92,7 @@ function add_tips(id) {
 
 function init_tips() {
   // 先从缓存中渲染
-  for (const dom of document.querySelectorAll(".equip-name")) {
+  for (const dom of document.querySelectorAll(".equip-name[data-id]")) {
     const equip_id = dom.attributes['data-id'].value
     add_tips(equip_id)
   }
@@ -155,16 +127,18 @@ function init_tips() {
   }
   const btn_all = document.createElement('a')
   btn_all.classList.add("btn", "btn-xs", "btn-danger")
-  btn_all.innerText = "更新标记"
+  btn_all.innerText = "更新数据"
   document.querySelector(".panel-heading .pull-right").prepend(btn_all)
   btn_all.addEventListener("click", () => {
     const nodes = Array.from(document.querySelectorAll('.equip-name'))
       .filter(dom => dom.childElementCount === 3)
-    console.log(`Update ${nodes.length} nodes`)
-    for (const [i, dom] of Object.entries(nodes)) {
-      setTimeout(() => dom.dispatchEvent(new Event("mouseover")), 10 + i * 888)
-      setTimeout(() => dom.dispatchEvent(new Event("mouseout")), 510 + i * 888)
-    }
+    confirm(`预计更新${nodes.length}个装备，是否执行？`, () => {
+      $("#modalConfirm").modal("hide")
+      for (const [i, dom] of Object.entries(nodes)) {
+        setTimeout(() => dom.dispatchEvent(new Event("mouseover")), 10 + i * 888)
+        setTimeout(() => dom.dispatchEvent(new Event("mouseout")), 510 + i * 888)
+      }
+    })
   })
 }
 

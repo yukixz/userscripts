@@ -5,7 +5,8 @@
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @grant        none
-// @match        https://www.idleinfinity.cn/*
+// @match        https://www.idleinfinity.cn/Map/Dungeon?*
+// @match        https://www.idleinfinity.cn/Battle/InDungeon?*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=idleinfinity.cn
 // ==/UserScript==
 
@@ -63,6 +64,8 @@ function acquire_runable() {
 }
 
 function in_map() {
+    if (document.querySelector('.auto-cancel') != null) return
+    if (document.querySelector('#modalAuto.in') != null) return
     // 检测是否为新秘境
     const explored = parseInt(document.querySelector('span.explore').textContent)
     if (explored <= 5) {
@@ -119,7 +122,6 @@ function in_map() {
 
 function in_battle() {
     if (document.querySelector('.battle-data') == null) return
-    if (document.querySelector('#modalAuto.in') == null) return
     const btn = document.querySelector('.panel-heading a.btn')
     if (acquire_runable()) {
         btn.click()

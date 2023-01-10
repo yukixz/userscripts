@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Idle Infinity - Item Filter
+// @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
 // @version      0.2.0
 // @description  Idle Infinity
