@@ -1,31 +1,36 @@
 // ==UserScript==
 // @name         Idle Infinity - Equipment
 // @namespace    http://dazzyd.org/
-// @version      0.3.2
+// @version      0.4.0
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
-// @grant        none
+// @grant        GM_addStyle
 // @match        https://www.idleinfinity.cn/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=idleinfinity.cn
 // ==/UserScript==
 
 
-/****************************************************************
- * equipmnent
- * 在装备名称后增加重要信息标记
- ****************************************************************/
+const store = {
+  load() {
+    const saved = JSON.parse(localStorage.getItem(`dd_ui_equip`) || "{}")
+    for (const [key, val] of Object.entries(saved)) {
+      this[key] = val
+    }
+  },
+  save() {
+    localStorage.setItem(`dd_ui_equip`, JSON.stringify(this))
+  },
+}
 
-const store_key = "dd_ui_equip"
-const store = JSON.parse(localStorage.getItem(store_key) || "{}")
 
-function parse_equip_content(id, dom) {
-  if (dom == null) {
+function parseContent(id, node) {
+  if (node == null) {
     return
   }
 
   // 判断content是否有内容
-  const lines = dom.querySelectorAll('p')
+  const lines = node.querySelectorAll('p')
   if (lines.length === 0) {
     return
   }
@@ -40,23 +45,34 @@ function parse_equip_content(id, dom) {
   const content = content_lines.join('|')
 
   store[id] = content
-  localStorage.setItem(store_key, JSON.stringify(store))
+  store.save()
 }
 
-function add_tips(id) {
+function addTips(id, equipNode) {
   if (store[id] == null) {
     return
   }
-  const equip = document.querySelector(`.equip-name[data-id="${id}"]`)
-  if (equip.childElementCount > 3) {
+  if (equipNode == null) {
+    equipNode = document.querySelector(`.equip-name[data-id="${id}"]`)
+  }
+  if (equipNode.parentNode.querySelector(".tips") != null) {
     return
+  }
+
+  const container = document.createElement('span')
+  container.classList.add("tips")
+  function addChild(text, className) {
+    const span = document.createElement('span')
+    span.innerText = text
+    if (className != null && className != "") {
+      span.classList.add(className)
+    }
+    container.append(span)
   }
 
   // 通过regexp提取信息
   const content = store[id]
-  const container = document.createElement('span')
-  container.classList.add("tips")
-  for (const [regex, suffix, class_name] of [
+  for (const [regex, suffix, className] of [
     [/\+(\d+) .*?(.{2})技能/g, "", "skill"],
     [/\+(\d+) (.{1,6})最大召唤数量/g, "", "magic"],
     [/\+(\d+)\% 增强伤害/g, "ed", "physical"],
@@ -70,79 +86,58 @@ function add_tips(id) {
     [/抗闪电 \+(\d+)/g, "l", "lightning"],
     [/抗毒 \+(\d+)/g, "p", "poison"],
     [/凹槽(\(0\/\d+\))/g, "", ""],
-//    [/双手伤害：/g, "2H", ""],
-//    [/需要等级：(\d+)/g, "rlv", ""],
+    // [/双手伤害：/g, "2H", ""],
+    // [/需要等级：(\d+)/g, "rlv", ""],
   ]) {
     const matches = content.matchAll(regex)
     for (const match of matches) {
-      const span = document.createElement('span')
       const value = match.slice(1).join('')
-      span.innerText = ` ${value}${suffix}`
-      if (class_name != null && class_name != "") {
-        span.classList.add(class_name)
-      }
-      container.append(span)
+      addChild(` ${value}${suffix}`, className)
     }
   }
   if (container.childElementCount === 0) {
-    const span = document.createElement('span')
-    span.innerText = "-"
-    container.append(span)
+    addChild(`-`)
   }
 
-  equip.append(container)
+  equipNode.after(container)
 }
 
-function init_tips() {
+function init() {
+  store.load()
+
   // 先从缓存中渲染
-  for (const dom of document.querySelectorAll(".equip-name[data-id]")) {
-    const equip_id = dom.attributes['data-id'].value
-    add_tips(equip_id)
+  for (const node of document.querySelectorAll(".equip-name[data-id]")) {
+    const id = node.attributes['data-id'].value
+    addTips(id, node)
   }
   // 解析已装备
-  for (const content_dom of document.querySelectorAll(".panel .equip-content")) {
-    if (content_dom.childElementCount === 0) {
+  for (const contentNode of document.querySelectorAll(".panel .equip-content")) {
+    if (contentNode.childElementCount === 0) {
       continue
     }
-    const equip_dom = content_dom.previousElementSibling.getElementsByClassName('equip-name')[0]
-    const equip_id = equip_dom.attributes['data-id'].value
-    parse_equip_content(equip_id, content_dom)
-    add_tips(equip_id)
+    const equipNode = contentNode.previousElementSibling.getElementsByClassName('equip-name')[0]
+    const id = equipNode.attributes['data-id'].value
+    parseContent(id, contentNode)
+    addTips(id, equipNode)
   }
   // 解析背包中
   const observer = new MutationObserver((mutationList, observer) => {
     for (const mutation of mutationList) {
       if (mutation.type === 'childList') {
-        const dom = mutation.target
-        const equip_id = dom.attributes['data-id'].value
-        parse_equip_content(equip_id, dom)
-        add_tips(equip_id)
+        const node = mutation.target
+        const id = node.attributes['data-id'].value
+        parseContent(id, node)
+        addTips(id)
         return
       }
     }
   })
-  for (const dom of document.querySelectorAll(".equip-content-container .equip-content")) {
-    observer.observe(dom, { childList: true })
+  for (const node of document.querySelectorAll(".equip-content-container .equip-content")) {
+    observer.observe(node, { childList: true })
   }
-  // 增加背包按钮
-  // if (location.pathname !== "/Equipment/Query") {
-  //   return
-  // }
-  // const btn_all = document.createElement('a')
-  // btn_all.classList.add("btn", "btn-xs", "btn-danger")
-  // btn_all.innerText = "更新数据"
-  // document.querySelector(".panel-heading .pull-right").prepend(btn_all)
-  // btn_all.addEventListener("click", () => {
-  //   const nodes = Array.from(document.querySelectorAll('.equip-name'))
-  //     .filter(dom => dom.childElementCount === 3)
-  //   confirm(`预计更新${nodes.length}个装备，是否执行？`, () => {
-  //     $("#modalConfirm").modal("hide")
-  //     for (const [i, dom] of Object.entries(nodes)) {
-  //       setTimeout(() => dom.dispatchEvent(new Event("mouseover")), 10 + i * 888)
-  //       setTimeout(() => dom.dispatchEvent(new Event("mouseout")), 510 + i * 888)
-  //     }
-  //   })
-  // })
+  // 增加CSS，鼠标移上去隐藏标记，避免内容过长换行
+  GM_addStyle(`.equip-container > p:hover > .tips { display: none; }`)
 }
 
-setTimeout(init_tips, 0)
+
+setTimeout(init, 0)
