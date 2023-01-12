@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Title
 // @namespace    http://dazzyd.org/
-// @version      0.3.0
+// @version      0.3.1
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @grant        none
@@ -10,25 +10,21 @@
 // ==/UserScript==
 
 
-/****************************************************************
- * title
- * 在标题栏显示页面信息
- ****************************************************************/
-
 function update_title() {
   let title = location.pathname
   if (location.pathname === "/Map/Dungeon") {
-    const seconds = document.querySelector('span.state')
-    if (seconds != null) {
-      title = `${location.pathname} SAN:${seconds.textContent}`
-    }
+    const explored = document.querySelector('.panel .explore').textContent
+    const monster = document.querySelector('.panel .monster-left').textContent
+    const boss = document.querySelector('.panel .boss-left').textContent
+    title = `Map ${Math.floor(100 * explored / 400)}% mob:${monster}/${boss}`
   }
   if (location.pathname === "/Battle/InDungeon") {
+    title = `Battle...`
     const seconds = document.querySelector('span#time')
     if (seconds != null) {
-      title = `${location.pathname} ET:${seconds.textContent}`
+      title = `Battle in ${seconds.textContent}s`
+      setTimeout(update_title, 100)
     }
-    setTimeout(update_title, 100)
   }
   if (location.pathname.startsWith("/Help/")) {
     title = `${location.pathname}${location.search}`
