@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Title
 // @namespace    http://dazzyd.org/
-// @version      0.3.1
+// @version      0.3.2
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @grant        none
@@ -17,13 +17,18 @@ function update_title() {
     const monster = document.querySelector('.panel .monster-left').textContent
     const boss = document.querySelector('.panel .boss-left').textContent
     title = `Map ${Math.floor(100 * explored / 400)}% mob:${monster}/${boss}`
+    setTimeout(update_title, 1000)
   }
   if (location.pathname === "/Battle/InDungeon") {
-    title = `Battle...`
-    const seconds = document.querySelector('span#time')
-    if (seconds != null) {
-      title = `Battle in ${seconds.textContent}s`
-      setTimeout(update_title, 100)
+    const timeNode = document.getElementById("time")
+    if (timeNode != null) {
+      title = `Battle in ${timeNode.textContent}s`
+      setTimeout(update_title, 200)
+    }
+    const dataNode = document.querySelector(".battle-data")
+    if (dataNode != null) {
+      title = dataNode.classList.contains("visually-hidden") ? "Battle ..." : "Battle done"
+      setTimeout(update_title, 1000)
     }
   }
   if (location.pathname.startsWith("/Help/")) {
