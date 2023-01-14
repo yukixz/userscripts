@@ -1,156 +1,117 @@
 // ==UserScript==
 // @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
-// @version      0.2.0
+// @version      0.3.0
 // @description  Idle Infinity
 // @author       Dazzy Ding
-// @grant        none
+// @license      MIT
+// @grant        GM_addStyle
 // @match        https://www.idleinfinity.cn/Config/Query?*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=idleinfinity.cn
 // ==/UserScript==
 
 
-// Config
-const config = {
-  rules: [
-    ["全部", "武器", ["+ 骑士光环技能", 3]],
-    ["全部", "防具", ["+ 骑士光环技能", 3]],
-    ["全部", "饰品", ["+ 骑士光环技能", 1]],
-    ["全部", "武器", ["+ 武僧真言技能", 3]],
-    ["全部", "防具", ["+ 武僧真言技能", 3]],
-    ["全部", "饰品", ["+ 武僧真言技能", 1]],
-    ["全部", "武器", ["+ 死灵召唤技能", 3]],
-    ["全部", "防具", ["+ 死灵召唤技能", 3]],
-    ["全部", "饰品", ["+ 死灵召唤技能", 1]],
-    ["全部", "武器", ["+ 法师元素技能", 1]],
-    ["全部", "防具", ["+ 法师元素技能", 1]],
-    ["全部", "饰品", ["+ 法师元素技能", 1]],
-    ["全部", "武器", ["+ 战士作战技能", 1]],
-    ["全部", "防具", ["+ 战士作战技能", 1]],
-    ["全部", "饰品", ["+ 战士作战技能", 1]],
-    ["全部", "武器", ["+ 游侠辅助技能", 3]],
-    ["全部", "防具", ["+ 游侠辅助技能", 2]],
-    ["全部", "饰品", ["+ 游侠辅助技能", 1]],
-    ["全部", "武器", ["+ 牧师暗影技能", 1]],
-    ["全部", "防具", ["+ 牧师暗影技能", 1]],
-    ["全部", "饰品", ["+ 牧师暗影技能", 1]],
-    ["全部", "武器", ["+ 刺客刺杀技能", 1]],
-    ["全部", "防具", ["+ 刺客刺杀技能", 1]],
-    ["全部", "饰品", ["+ 刺客刺杀技能", 1]],
-    ["全部", "武器", ["+ 萨满元素技能", 1]],
-    ["全部", "防具", ["+ 萨满元素技能", 1]],
-    ["全部", "饰品", ["+ 萨满元素技能", 1]],
-    ["全部", "武器", ["+ 贤者自然技能", 1]],
-    ["全部", "防具", ["+ 贤者自然技能", 1]],
-    ["全部", "饰品", ["+ 贤者自然技能", 1]],
-    ["全部", "武器", ["+ 猎手陷阱技能", 3]],
-    ["全部", "防具", ["+ 猎手陷阱技能", 2]],
-    ["全部", "饰品", ["+ 猎手陷阱技能", 1]],
+const store = {
+  load() {
+    const saved = JSON.parse(localStorage.getItem(`dd_ui_filter`) || "{}")
+    for (const [key, val] of Object.entries(saved)) {
+      this[key] = val
+    }
+  },
+  save() {
+    localStorage.setItem(`dd_ui_filter`, JSON.stringify(this))
+  },
+}
+const validOptions = {}
 
-    ["全部", "手套", ["+% 更佳的机会取得魔法装备", 25]],
-    ["全部", "靴子", ["+% 更佳的机会取得魔法装备", 35]],
-    ["全部", "项链", ["+% 更佳的机会取得魔法装备", 50]],
-    ["全部", "戒指", ["+% 更佳的机会取得魔法装备", 40]],
-    ["全部", "护符", ["+% 更佳的机会取得魔法装备", 40]],
-    // 当前最佳
-    // ["全部", "项链", ["+% 更佳的机会取得魔法装备", 20]],
-    // ["全部", "戒指", ["+% 更佳的机会取得魔法装备", 20]],
-    // ["全部", "护符", ["+% 更佳的机会取得魔法装备", 32]],
 
-    ["全部", "头饰", ["+% 提升施法速度", 10]],
-    ["全部", "项链", ["+% 提升施法速度", 10]],
-    ["全部", "戒指", ["+% 提升施法速度", 10]],
+class Condition {
+  constructor(name, value) {
+    this.name = name
+    this.value = value
+  }
 
-    // 凹槽装备
-    ["普通", "帽子", ["凹槽", 3]],
-    ["普通", "锤", ["凹槽", 4]],
-    ["普通", "骑士盾牌", ["+% 元素抗性", 40], ["凹槽", 4]],
-    ["普通", "权杖", ["凹槽", 3], ["骑士光环系-狂热光环", 3]],
-    ["普通", "权杖", ["凹槽", 3], ["骑士光环系-审判光环", 3]],
-    ["普通", "权杖", ["凹槽", 3], ["骑士光环系-冥想光环", 3]],
-    ["普通", "手杖", ["凹槽", 2], ["死灵召唤系-骷髅复生", 3]],
-    ["普通", "手杖", ["凹槽", 2], ["死灵召唤系-骷髅法师", 3]],
-    ["普通", "手杖", ["凹槽", 2], ["死灵召唤系-支配骷髅", 3]],
-    ["普通", "手杖", ["凹槽", 2], ["死灵召唤系-生生不息", 3]],
-    ["普通", "死灵副手", ["凹槽", 2], ["死灵召唤系-骷髅复生", 3]],
-    ["普通", "死灵副手", ["凹槽", 2], ["死灵召唤系-骷髅法师", 3]],
-    ["普通", "死灵副手", ["凹槽", 2], ["死灵召唤系-支配骷髅", 3]],
-    ["普通", "死灵副手", ["凹槽", 2], ["死灵召唤系-生生不息", 3]],
+  static fromString(string) {
+    const matches = string.match(/^【(.+?)】\s*(>=|包含)\s*(\d+)$/)
+    if (matches == null) {
+      return null
+    }
+    const cond = new Condition(matches[1], matches[3])
+    if (validOptions.prefix.includes(cond.name) || validOptions.skill.includes(cond.name)) {
+      return cond
+    }
+    return null
+  }
 
-    // 其他装备
-    ["全部", "全部", ["单项元素抗性之和%", 100]],
-    ["全部", "饰品", ["+% 元素抗性", 10]],
-    ["全部", "护符", ["+ 召唤技能最大召唤数量", 1]],
-    // ["魔法", "项链", ["物品等级", 60]],
-    // ["魔法", "护符", ["物品等级", 60]],
-    ["全部", "秘境"],
-    ["套装", "全部"],
-    ["传奇", "全部"],
+  toString() {
+    return `【${this.name}】 >= ${this.value}`
+  }
 
-    // 珠宝
-    ["全部", "珠宝", ["+% 提升攻击速度", 15]],
-    ["全部", "珠宝", ["+% 元素抗性", 10]],
-    ["全部", "珠宝", ["+% 更佳的机会取得魔法装备", 10]],
-  ],
+  isSame(other) {
+    return this.name === other.name && this.value === other.value
+  }
+
+  isSkill() {
+    return validOptions.skill.includes(this.name)
+  }
 }
 
-
-function init() {
-  let current_rules = {}
-  for (const row of document.querySelectorAll('tbody tr')) {
-    let parts = []
-    const tds = row.querySelectorAll('td')
-    parts.push(tds[1].innerText)
-    parts.push(tds[2].innerText)
-    for (const div of tds[3].querySelectorAll('div.col-sm-6')) {
-      parts.push(div.innerText)
-    }
-    current_rules[parts.join('|')] = row
+class Rule {
+  constructor(power, type, conditions, dom) {
+    this.power = power
+    this.type = type
+    this.conditions = conditions != null ? conditions : []
+    this.dom = dom
   }
 
-  let require_rules = {}
-  for (const row of config.rules) {
-    let parts = []
-    parts.push(row[0])
-    parts.push(row[1])
-    for (const [title, value] of row.slice(2)) {
-      parts.push(`【${title}】 >= ${value}`)
+  static fromString(string) {
+    const parts = string.split('|')
+    const rule = new Rule(
+      parts[0], parts[1],
+      parts.slice(2).map(s => Condition.fromString(s)))
+    if (validOptions.power.includes(rule.power) && validOptions.type.includes(rule.type) && rule.conditions.indexOf(null) === -1) {
+      return rule
     }
-    require_rules[parts.join('|')] = row
+    return null
   }
 
-  // 高亮不在配置中的多余规则
-  for (const [key, dom] of Object.entries(current_rules)) {
-    if (require_rules[key] == null) {
-      console.log(`多余规则：${key}`)
-      dom.style.backgroundColor = "#900"
+  toString() {
+    const parts = []
+    parts.push(this.power)
+    parts.push(this.type)
+    for (const cond of this.conditions) {
+      parts.push(cond.toString())
     }
+    return parts.join('|')
   }
 
-  // 缺少规则
-  let added = false  // 只触发一次自动新增操作
-  for (const [key, rule] of Object.entries(require_rules)) {
-    if (current_rules[key] == null) {
-      console.log(`缺少规则：${key}`)
-      if (!added) {
-        added = true
-        confirm(`是否添加规则：\n${rule}`, () => {
-          $("#modalConfirm").modal("hide")
-          add_step = 1
-          setInterval(add_rule, 500, rule)
-        })
+  isSame(other) {
+    if (this.power !== other.power) {
+      return false
+    }
+    if (this.type !== other.type) {
+      return false
+    }
+    if (this.conditions.length !== other.conditions.length) {
+      return false
+    }
+    for (const cond of other.conditions) {
+      if (this.conditions.find(otherCond => cond.isSame(otherCond)) == null) {
+        return false
       }
     }
+    return true
   }
 }
 
+function createElementByHTML(html) {
+  const template = document.createElement('template')
+  template.innerHTML = html.trim()
+  return template.content.firstChild
+}
 
-let add_step = 0
 
-function add_rule(rule) {
-  if (add_step === 0) {
-    return
-  }
+function addRule(rule) {
   function select_value(dom, value) {
     for (const [index, option] of Object.entries(dom.options)) {
       if (option.text === value) {
@@ -161,44 +122,187 @@ function add_rule(rule) {
     console.error(`无法在DOM${dom}中找到选项${value}`)
   }
 
-  const btn_open_modal = document.querySelector("a[data-target='#modalConfig']")
-  const div_modal = document.querySelector("#modalConfig")
-  const btn_add_cond = div_modal.querySelector("button.config-magic-add")
-  const btn_submit = div_modal.querySelector("button.config-apply")
+  const modal = document.querySelector("#modalConfig")
+  setTimeout(step1, 0)
 
-  if (add_step === 1) {
-    btn_open_modal.click()
-    select_value(div_modal.querySelector("select#power"), rule[0])
-    select_value(div_modal.querySelector("select#type"), rule[1])
-    for (const _ of rule.slice(2)) {
-      btn_add_cond.click()
+  function step1() {
+    const modalOpen = document.querySelector("a[data-target='#modalConfig']")
+    modalOpen.click()
+    select_value(modal.querySelector("select#power"), rule.power)
+    select_value(modal.querySelector("select#type"), rule.type)
+    const condDivList = modal.querySelectorAll("div.condition")
+    const condAdd = modal.querySelector("button.config-magic-add")
+    for (let i = condDivList.length; i < rule.conditions.length; i++) {
+      condAdd.click()
     }
-    add_step = 2
-    return
+    setTimeout(step2, 250)
   }
-  if (add_step === 2) {
-    const div_conds = div_modal.querySelectorAll("div.condition")
-    for (const [index, [title, value]] of rule.slice(2).entries()) {
-      const div = div_conds[index]
-      if (title.match(/^.{4}系-.+$/)) {
+
+  function step2() {
+    const condDivList = modal.querySelectorAll("div.condition")
+    for (const [index, cond] of rule.conditions.entries()) {
+      const div = condDivList[index]
+      if (cond.isSkill()) {
         select_value(div.querySelector("select.prefix"), "+ 职业指定技能")
-        select_value(div.querySelector("select.sk"), title)
+        select_value(div.querySelector("select.sk"), cond.name)
       }
       else {
-        select_value(div.querySelector("select.prefix"), title)
+        select_value(div.querySelector("select.prefix"), cond.name)
       }
-      div.querySelector("input.min").value = value
+      div.querySelector("input.min").value = cond.value
     }
-    add_step = 3
-    return
+    setTimeout(step3, 250)
   }
-  if (add_step === 3) {
-    btn_submit.click()
-    add_step = 0
-    return
+
+  function step3() {
+    if (localStorage.getItem("f909ef0a")) {
+      modal.querySelector("button.config-apply").click()
+    }
   }
 }
 
+function loadCurrentRules() {
+  return Array.from(document.querySelectorAll('tbody tr'))
+    .map(row => {
+      const tds = row.querySelectorAll('td')
+      return new Rule(
+        tds[1].innerText,
+        tds[2].innerText,
+        Array.from(tds[3].querySelectorAll('div.col-sm-6')).map(
+          div => Condition.fromString(div.innerText)),
+        row,
+      )
+    })
+}
 
+function parseRulesByText(text) {
+  const ret = []
+  const lines = text.split('\n').map(s => s.trim()).filter(s => s.length > 0)
+  for (const line of lines) {
+    const rule = Rule.fromString(line)
+    if (rule != null) {
+      ret.push(rule)
+    }
+  }
+  return ret
+}
 
-setTimeout(init, 0)
+function checkRulesByText(text) {
+  const ret = []
+  const lines = text.split('\n').map(s => s.trim()).filter(s => s.length > 0)
+  for (const line of lines) {
+    const rule = Rule.fromString(line)
+    if (rule == null) {
+      ret.push(line)
+    }
+  }
+  return ret
+}
+
+function updateTable() {
+  if (store.rules == null) {
+    return
+  }
+  const currentRules = loadCurrentRules()
+  const requireRules = parseRulesByText(store.rules)
+
+  // 高亮不在配置中的多余规则
+  for (const rule of currentRules) {
+    if (requireRules.find(other => rule.isSame(other)) != null) {
+      continue
+    }
+    console.log(`多余规则：${rule}`)
+    rule.dom.style.backgroundColor = "#900"
+  }
+
+  // 缺少规则
+  let firstCurrent = currentRules[0].dom
+  for (const rule of requireRules) {
+    if (currentRules.find(other => rule.isSame(other)) != null) {
+      continue
+    }
+    console.log(`缺少规则：${rule}`)
+    const row = createElementByHTML(`
+    <tr style="background-color: #009">
+      <td class="text-center">无效</td>
+      <td class="text-center">${rule.power}</td>
+      <td class="text-center">${rule.type}</td>
+      <td>
+        <div class="container-fluid">
+          ${rule.conditions.map(cond => `<div class="col-sm-6 col-md-6"><span>${cond.toString()}</span></div>`)}
+        </div>
+      </td>
+      <td>
+        <span class="sr-only label label-primary rule-add">添加</span>
+      </td>
+    </tr>
+    `)
+    firstCurrent.before(row)
+    row.getElementsByClassName('rule-add')[0]
+      .addEventListener("click", () => {
+        addRule(rule)
+      })
+  }
+}
+
+function updateUI() {
+  document.querySelector(".panel-heading > .pull-right").prepend(createElementByHTML(`
+  <a class="btn btn-xs btn-danger" id="helper-open" role="button" data-toggle="modal" data-target="#modalHelper">助手</a>
+  `))
+  document.getElementById("modalImport").after(createElementByHTML(`
+  <div class="modal fade" id="modalHelper" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-md" role="document">
+      <div class="modal-content model-inverse">
+        <div class="modal-header">
+          <span class="modal-title">批量管理助手</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="control-label">编辑规则文本并提交</label>
+            <textarea class="form-control" rows="10" id="helper-rules"></textarea>
+          </div>
+          <div class="form-group">
+            <label>使用说明</label>
+            <p>蓝底为需要手动增加，红底为需要手动删除</p>
+            <p>清空规则文本可以停用助手。</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary btn-xs" id="helper-submit">提交</button>
+          <button type="button" class="btn btn-default btn-xs" data-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  `))
+
+  document.getElementById("helper-open")
+    .addEventListener("click", () => {
+      const rules = store.rules != null ? parseRulesByText(store.rules) : loadCurrentRules()
+      const output = rules.map(rule => rule.toString()).join('\n')
+      document.getElementById("helper-rules").value = output
+    })
+  document.getElementById("helper-submit")
+    .addEventListener("click", () => {
+      const input = document.getElementById("helper-rules").value
+      store.rules = input.trim() === "" ? null : input
+      store.save()
+      location.reload()
+    })
+}
+
+setTimeout(() => {
+  store.load()
+  for (const [key, selector] of Object.entries({
+    power: "#modalConfig #power option",
+    type: "#modalConfig #type option",
+    prefix: ".condition-template .prefix option",
+    skill: ".condition-template .sk option",
+  })) {
+    validOptions[key] = Array.from(document.querySelectorAll(selector)).map(
+      e => e.innerText.trim())
+  }
+
+  updateTable()
+  updateUI()
+}, 0)
