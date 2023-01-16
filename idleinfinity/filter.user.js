@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -227,7 +227,7 @@ function updateTable() {
       <td class="text-center">${rule.type}</td>
       <td>
         <div class="container-fluid">
-          ${rule.conditions.map(cond => `<div class="col-sm-6 col-md-6"><span>${cond.toString()}</span></div>`)}
+          ${rule.conditions.map(cond => `<div class="col-sm-6 col-md-6"><span>${cond.toString()}</span></div>`).join('')}
         </div>
       </td>
       <td>
