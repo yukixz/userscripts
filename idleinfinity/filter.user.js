@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
-// @version      0.4.2
+// @version      0.4.3
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -174,27 +174,19 @@ function loadCurrentRules() {
 }
 
 function parseRulesByText(text) {
-  const ret = []
+  const rules = []
+  const errors = []
   const lines = text.split('\n').map(s => s.trim()).filter(s => s.length > 0)
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const rule = Rule.fromString(line)
     if (rule != null) {
-      ret.push(rule)
+      rules.push(rule)
+    }
+    else {
+      errors.push([index, line])
     }
   }
-  return ret
-}
-
-function checkRulesByText(text) {
-  const ret = []
-  const lines = text.split('\n').map(s => s.trim()).filter(s => s.length > 0)
-  for (const line of lines) {
-    const rule = Rule.fromString(line)
-    if (rule == null) {
-      ret.push(line)
-    }
-  }
-  return ret
+  return [rules, errors]
 }
 
 function updateTable() {
@@ -202,7 +194,7 @@ function updateTable() {
     return
   }
   const currentRules = loadCurrentRules()
-  const requireRules = parseRulesByText(store.rules)
+  const [requireRules, _] = parseRulesByText(store.rules)
 
   // 高亮不在配置中的多余规则
   for (const rule of currentRules) {
@@ -259,10 +251,13 @@ function updateUI() {
             <label class="control-label">编辑规则文本并提交</label>
             <textarea class="form-control" rows="10" id="helper-rules"></textarea>
           </div>
+          <div class="form-group error" id="helper-error"></div>
           <div class="form-group">
             <label>使用说明</label>
-            <p>蓝底为需要手动增加，红底为需要手动删除</p>
-            <p>清空规则文本可以停用助手。</p>
+            <p>
+              蓝底为需要手动增加，红底为需要手动删除。<br>
+              清空规则文本可以停用助手。<br>
+            </p>
           </div>
         </div>
         <div class="modal-footer">
@@ -276,16 +271,23 @@ function updateUI() {
 
   document.getElementById("helper-open")
     .addEventListener("click", () => {
-      const rules = store.rules != null ? parseRulesByText(store.rules) : loadCurrentRules()
-      const output = rules.map(rule => rule.toString()).join('\n')
+      const output = store.rules != null ? store.rules
+        : loadCurrentRules().map(rule => rule.toString()).join('\n')
       document.getElementById("helper-rules").value = output
     })
   document.getElementById("helper-submit")
     .addEventListener("click", () => {
       const input = document.getElementById("helper-rules").value
-      store.rules = input.trim() === "" ? null : input
-      store.save()
-      location.reload()
+      const [_, errors] = parseRulesByText(input)
+      if (errors.length > 0) {
+        document.getElementById("helper-error").innerHTML =
+          errors.map(([index, line]) => `第${index + 1}行：${line}`).join('<br>')
+      }
+      else {
+        store.rules = input.trim() === "" ? null : input
+        store.save()
+        location.reload()
+      }
     })
 }
 
