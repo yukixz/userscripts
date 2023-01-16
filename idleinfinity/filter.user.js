@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
-// @version      0.3.0
+// @version      0.4.1
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -155,9 +155,7 @@ function addRule(rule) {
   }
 
   function step3() {
-    if (localStorage.getItem("f909ef0a")) {
-      modal.querySelector("button.config-apply").click()
-    }
+    modal.querySelector("button.config-apply").click()
   }
 }
 
