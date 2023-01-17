@@ -99,7 +99,7 @@ setTimeout(() => {
 
   function update() {
     document.title = [
-      `[${char}]`,
+      char != null ? `[${char}]` : null,
       title != null ? title : location.pathname,
       getInfo != null ? getInfo() : null,
     ].filter(x => x != null).join(' ')
