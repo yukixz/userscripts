@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Title
 // @namespace    http://dazzyd.org/
-// @version      0.4.0
+// @version      0.4.1
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @grant        none
@@ -33,10 +33,11 @@ const rules = {
 
   "/Map/Detail": ["地图"],
   "/Map/Dungeon": ["秘境", () => {
-    const explored = document.querySelector('.panel .explore').textContent
-    const monster = document.querySelector('.panel .monster-left').textContent
-    const boss = document.querySelector('.panel .boss-left').textContent
-    return `${Math.floor(100 * explored / 400)}% ${monster}/${boss}`
+    const san = document.querySelector(".panel-heading .state").textContent
+    const explored = document.querySelector('.panel-body .explore').textContent
+    const monster = document.querySelector('.panel-body .monster-left').textContent
+    const boss = document.querySelector('.panel-body .boss-left').textContent
+    return `${Math.floor(100 * explored / 400)}% ${monster}/${boss} ${san}san`
   }],
   "/Battle/InDungeon": ["战斗", () => {
     const timeNode = document.getElementById("time")
