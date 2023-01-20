@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
-// @version      0.4.3
+// @version      0.4.4
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -195,6 +195,7 @@ function updateTable() {
   }
   const currentRules = loadCurrentRules()
   const [requireRules, _] = parseRulesByText(store.rules)
+  let isExactMatch = true
 
   // 高亮不在配置中的多余规则
   for (const rule of currentRules) {
@@ -202,6 +203,7 @@ function updateTable() {
       continue
     }
     console.log(`多余规则：${rule}`)
+    isExactMatch = false
     rule.dom.style.backgroundColor = "#900"
   }
 
@@ -212,6 +214,7 @@ function updateTable() {
       continue
     }
     console.log(`缺少规则：${rule}`)
+    isExactMatch = false
     const row = createElementByHTML(`
     <tr style="background-color: #009">
       <td class="text-center">无效</td>
@@ -232,6 +235,12 @@ function updateTable() {
       .addEventListener("click", () => {
         addRule(rule)
       })
+  }
+
+  // 如果完全匹配，则清空保存的规则
+  if (isExactMatch) {
+    store.rules = null
+    store.save()
   }
 }
 
