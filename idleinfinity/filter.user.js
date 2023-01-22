@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
-// @version      0.4.4
+// @version      0.4.5
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -32,7 +32,7 @@ class Condition {
   }
 
   static fromString(string) {
-    const matches = string.match(/^【(.+?)】\s*(>=|包含)\s*(\d+)$/)
+    const matches = string.match(/^【(.+?)】\s*(>=|=|包含)\s*【?(\d+)】?$/)
     if (matches == null) {
       return null
     }
@@ -44,6 +44,12 @@ class Condition {
   }
 
   toString() {
+    if (this.name === "序号") {
+      return `【${this.name}】 = ${this.value}`
+    }
+    if (this.name === "名称") {
+      return `【${this.name}】 包含 【${this.value}】`
+    }
     return `【${this.name}】 >= ${this.value}`
   }
 
@@ -226,7 +232,7 @@ function updateTable() {
         </div>
       </td>
       <td>
-        <span class="sr-only label label-primary rule-add">添加</span>
+        <span class="label label-primary rule-add">添加</span>
       </td>
     </tr>
     `)
