@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Equipment
 // @namespace    http://dazzyd.org/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -36,6 +36,7 @@ const tipRules = {
   "抗闪电(l)": [/抗闪电 \+(\d+)/g, "l", "lightning"],
   "抗毒(p)": [/抗毒 \+(\d+)/g, "p", "poison"],
   "凹槽": [/凹槽(\(0\/\d+\))/g, "", ""],
+  "无法装备": [/（无法装备）/g, "❌", ""],
   "双手武器": [/双手伤害：/g, "2H", ""],
   "需要等级": [/需要等级：(\d+)/g, "rlv", ""],
 }
