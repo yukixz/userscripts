@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Idle Infinity - Title
 // @namespace    http://dazzyd.org/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Idle Infinity
 // @author       Dazzy Ding
+// @license      MIT
 // @grant        none
 // @match        https://www.idleinfinity.cn/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=idleinfinity.cn
@@ -46,7 +47,7 @@ const rules = {
     }
     const dataNode = document.querySelector(".battle-data")
     if (dataNode != null) {
-      return dataNode.classList.contains("visually-hidden") ? "Battle ..." : "Battle done"
+      return dataNode.classList.contains("visually-hidden") ? "..." : "done"
     }
   }],
 
@@ -55,18 +56,18 @@ const rules = {
   "/Character/AllChar": ["角色等级排行"],
   "/Character/AllCharMCU": ["符文掉落排行"],
 
-  "/Help/Content?url=Base": ["帮助-基础知识"],
-  "/Help/Content?url=CharType": ["帮助-职业介绍"],
-  "/Help/Content?url=Monsters": ["帮助-怪物介绍"],
-  "/Help/Content?url=Equip": ["帮助-物品装备"],
-  "/Help/Content?url=BaseEquip": ["帮助-普通物品"],
-  "/Help/Content?url=Prefix": ["帮助-前缀"],
-  "/Help/Content?url=Suffix": ["帮助-后缀"],
-  "/Help/Content?url=SpecialAffix": ["帮助-固定词缀"],
-  "/Help/Content?url=Set": ["帮助-套装"],
-  "/Help/Content?url=Sacred": ["帮助-圣衣"],
-  "/Help/Content?url=Unique": ["帮助-传奇物品"],
-  "/Help/Content?url=Artifact": ["帮助-神器"],
+  "/Help/Content?url=Base": ["基础知识"],
+  "/Help/Content?url=CharType": ["职业技能"],
+  "/Help/Content?url=Monsters": ["怪物介绍"],
+  "/Help/Content?url=Equip": ["物品装备"],
+  "/Help/Content?url=BaseEquip": ["普通物品"],
+  "/Help/Content?url=Prefix": ["前缀词缀"],
+  "/Help/Content?url=Suffix": ["后缀词缀"],
+  "/Help/Content?url=SpecialAffix": ["固定词缀"],
+  "/Help/Content?url=Set": ["套装物品"],
+  "/Help/Content?url=Sacred": ["圣衣套装"],
+  "/Help/Content?url=Unique": ["传奇物品"],
+  "/Help/Content?url=Artifact": ["神器物品"],
 
   "/Guide/Query": ["攻略列表"],
   "/Guide/Detail": ["攻略详情"],
