@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Equipment
 // @namespace    http://dazzyd.org/
-// @version      0.4.2
+// @version      0.4.3
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -24,6 +24,7 @@ const store = {
 }
 const tipRules = {
   "职业技能": [/\+(\d+) .*?(.{2})技能/g, "", "skill"],
+  "赋予技能": [/赋予Lv(\d+.+?)（/g, "", "skill"],
   "召唤数量": [/\+(\d+) (.{1,6})最大召唤数量/g, "", "magic"],
   "增强伤害(ed)": [/\+(\d+)\% 增强伤害/g, "ed", "physical"],
   "攻击速度(ias)": [/攻击速度提升 (\d+)\%/g, "ias", "physical"],
@@ -42,6 +43,7 @@ const tipRules = {
 }
 const defaultTips = [
   "职业技能",
+  "赋予技能",
   "召唤数量",
   "增强伤害(ed)",
   "攻击速度(ias)",
