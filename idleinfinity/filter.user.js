@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
-// @version      0.4.5
+// @version      0.4.6
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -53,8 +53,15 @@ class Condition {
     return `【${this.name}】 >= ${this.value}`
   }
 
+  compare(other) {
+    // 【技能】排在前面，其他按选项顺序
+    const indexOf = name =>
+      validOptions.prefixAll.indexOf(name) - (name.includes("技能") ? validOptions.prefixAll.length : 0)
+    return indexOf(this.name) - indexOf(other.name)
+  }
+
   isSame(other) {
-    return this.name === other.name && this.value === other.value
+    return this.compare(other) === 0
   }
 
   isSkill() {
@@ -66,7 +73,7 @@ class Rule {
   constructor(power, type, conditions, dom) {
     this.power = power
     this.type = type
-    this.conditions = conditions != null ? conditions : []
+    this.conditions = conditions == null ? [] : conditions.sort((a, b) => a.compare(b))
     this.dom = dom
   }
 
@@ -91,22 +98,25 @@ class Rule {
     return parts.join('|')
   }
 
-  isSame(other) {
+  compare(other) {
     if (this.power !== other.power) {
-      return false
+      return validOptions.power.indexOf(this.power) - validOptions.power.indexOf(other.power)
     }
     if (this.type !== other.type) {
-      return false
+      return validOptions.type.indexOf(this.type) - validOptions.type.indexOf(other.type)
     }
     if (this.conditions.length !== other.conditions.length) {
-      return false
+      return this.conditions.length - other.conditions.length
     }
-    for (const cond of other.conditions) {
-      if (this.conditions.find(otherCond => cond.isSame(otherCond)) == null) {
-        return false
-      }
+    for (const [i, cond] of this.conditions.entries()) {
+      const ret = cond.compare(other.conditions[i])
+      if (ret !== 0) return ret
     }
-    return true
+    return 0
+  }
+
+  isSame(other) {
+    return this.compare(other) === 0
   }
 }
 
@@ -177,6 +187,7 @@ function loadCurrentRules() {
         row,
       )
     })
+    .sort((a, b) => a.compare(b))
 }
 
 function parseRulesByText(text) {
@@ -317,6 +328,7 @@ setTimeout(() => {
     validOptions[key] = Array.from(document.querySelectorAll(selector)).map(
       e => e.innerText.trim())
   }
+  validOptions.prefixAll = [].concat(validOptions.prefix, validOptions.skill)
 
   updateTable()
   updateUI()
