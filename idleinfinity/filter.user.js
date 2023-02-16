@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Filter
 // @namespace    http://dazzyd.org/
-// @version      0.4.6
+// @version      0.4.7
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -57,7 +57,12 @@ class Condition {
     // 【技能】排在前面，其他按选项顺序
     const indexOf = name =>
       validOptions.prefixAll.indexOf(name) - (name.includes("技能") ? validOptions.prefixAll.length : 0)
-    return indexOf(this.name) - indexOf(other.name)
+    if (this.name !== other.name) {
+      return indexOf(this.name) - indexOf(other.name)
+    }
+    else {
+      return this.value - other.value
+    }
   }
 
   isSame(other) {
@@ -79,10 +84,12 @@ class Rule {
 
   static fromString(string) {
     const parts = string.split('|')
-    const rule = new Rule(
-      parts[0], parts[1],
-      parts.slice(2).map(s => Condition.fromString(s)))
-    if (validOptions.power.includes(rule.power) && validOptions.type.includes(rule.type) && rule.conditions.indexOf(null) === -1) {
+    const conds = parts.slice(2).map(s => Condition.fromString(s))
+    if (conds.indexOf(null) !== -1) {
+      return null
+    }
+    const rule = new Rule(parts[0], parts[1], conds)
+    if (validOptions.power.includes(rule.power) && validOptions.type.includes(rule.type)) {
       return rule
     }
     return null
@@ -275,7 +282,7 @@ function updateUI() {
         <div class="modal-body">
           <div class="form-group">
             <label class="control-label">编辑规则文本并提交</label>
-            <textarea class="form-control" rows="10" id="helper-rules"></textarea>
+            <textarea class="form-control" rows="20" id="helper-rules"></textarea>
           </div>
           <div class="form-group error" id="helper-error"></div>
           <div class="form-group">
