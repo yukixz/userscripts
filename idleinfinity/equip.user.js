@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idle Infinity - Equipment
 // @namespace    http://dazzyd.org/
-// @version      0.5.0
+// @version      0.5.1
 // @description  Idle Infinity
 // @author       Dazzy Ding
 // @license      MIT
@@ -33,21 +33,22 @@ const tipRules = [
   { name: "职业技能", regexp: /^\+(\d+) .{0,2}(.{2})技能/, format: (a, b) => `${a}${b}`, style: "skill", default: true },
   { name: "获得技能", regexp: new RegExp(`^\\+(\\d+) (${allSkills.join('|')})$`), format: (a, b) => `${a}${b}`, style: "skill", default: true },
   { name: "赋予技能", regexp: /^赋予Lv(\d+)(.+)/, format: (a, b) => `${a}${b}`, style: "magic", default: true },
-  { name: "召唤数量", regexp: /\+(\d+) (.{1,6})最大召唤数量/, format: (a, b) => `${a}${b}`, style: "magic", default: true },
-  { name: "增强伤害", regexp: /\+(\d+)\% 增强伤害/, format: a => `${a}ed`, style: "physical", default: true },
-  { name: "攻击速度", regexp: /攻击速度提升 (\d+)\%/, format: a => `${a}ias`, style: "physical", default: true },
-  { name: "施法速度", regexp: /施法速度提升 (\d+)\%/, format: a => `${a}fcr`, style: "magic", default: true },
-  { name: "魔法装备", regexp: /\+(\d+)\% 更佳的机会取得魔法装备/, format: a => `${a}mf`, style: "state", default: true },
-  { name: "额外金币", regexp: /\+(\d+)\% 额外金币从怪物身上取得/, format: a => `${a}gf`, style: "lightning", default: true },
-  { name: "元素抗性", regexp: /元素抗性 \+(\d+)\%/, format: a => `${a}res`, style: "skill", default: true },
-  { name: "抗火", regexp: /抗火 \+(\d+)/, format: a => `${a}f`, style: "fire", default: true },
-  { name: "抗寒", regexp: /抗寒 \+(\d+)/, format: a => `${a}c`, style: "cold", default: true },
-  { name: "抗闪电", regexp: /抗闪电 \+(\d+)/, format: a => `${a}l`, style: "lightning", default: true },
-  { name: "抗毒", regexp: /抗毒 \+(\d+)/, format: a => `${a}p`, style: "poison", default: true },
-  { name: "凹槽", regexp: /凹槽(\(0\/\d+\))/, format: a => `${a}`, style: "", default: true },
-  { name: "无法装备", regexp: /（无法装备）/, format: () => `❌`, style: "", default: false },
-  { name: "双手武器", regexp: /双手伤害：/, format: () => `2H`, style: "", default: false },
-  { name: "需要等级", regexp: /需要等级：(\d+)/, format: a => `rlv${a}`, style: "", default: false },
+  { name: "召唤数量", regexp: /^\+(\d+) (.{1,6})最大召唤数量/, format: (a, b) => `${a}${b}`, style: "magic", default: true },
+  { name: "增强伤害", regexp: /^\+(\d+)\% 增强伤害$/, format: a => `${a}ed`, style: "physical", default: true },
+  { name: "攻击速度", regexp: /^攻击速度提升 (\d+)\%/, format: a => `${a}ias`, style: "physical", default: true },
+  { name: "施法速度", regexp: /^施法速度提升 (\d+)\%/, format: a => `${a}fcr`, style: "magic", default: true },
+  { name: "魔法装备", regexp: /^\+(\d+)\% 更佳的机会取得魔法装备/, format: a => `${a}mf`, style: "state", default: true },
+  { name: "额外金币", regexp: /^\+(\d+)\% 额外金币从怪物身上取得/, format: a => `${a}gf`, style: "lightning", default: true },
+  { name: "元素抗性", regexp: /^元素抗性 \+(\d+)\%/, format: a => `${a}res`, style: "skill", default: true },
+  { name: "抗火", regexp: /^抗火 \+(\d+)/, format: a => `${a}f`, style: "fire", default: true },
+  { name: "抗寒", regexp: /^抗寒 \+(\d+)/, format: a => `${a}c`, style: "cold", default: true },
+  { name: "抗闪电", regexp: /^抗闪电 \+(\d+)/, format: a => `${a}l`, style: "lightning", default: true },
+  { name: "抗毒", regexp: /^抗毒 \+(\d+)/, format: a => `${a}p`, style: "poison", default: true },
+  { name: "凹槽", regexp: /^凹槽(\(0\/\d+\))/, format: a => `${a}`, style: "", default: true },
+  { name: "无法装备", regexp: /（无法装备）$/, format: () => `❌`, style: "", default: false },
+  { name: "双手武器", regexp: /^双手伤害：/, format: () => `2H`, style: "", default: false },
+  { name: "掉落等级", regexp: /^掉落等级：(\d+)/, format: a => `dlv${a}`, style: "", default: false },
+  { name: "需要等级", regexp: /^需要等级：(\d+)/, format: a => `rlv${a}`, style: "", default: false },
 ]
 
 
