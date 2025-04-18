@@ -596,8 +596,8 @@
         days: 0,
       }
  
-      let timeShort = ''
-      let timeLong = ''
+      let timeShort = []
+      let timeLong = []
  
       timeValues.seconds = timeToFormat % 60
       timeToFormat = (timeToFormat - (timeToFormat % 60)) / 60
@@ -608,24 +608,24 @@
       timeValues.days = timeToFormat
  
       if (timeValues.days) {
-        timeShort += `${timeValues.days}d `
-        timeLong += `${timeValues.days} days `
+        timeShort.push(`${timeValues.days}d`)
+        timeLong.push(`${timeValues.days} days`)
       }
       if (timeValues.hours) {
-        timeShort += `${timeValues.hours}h `
-        timeLong += `${timeValues.hours} hrs `
+        timeShort.push(`${timeValues.hours}h`)
+        timeLong.push(`${timeValues.hours} hrs`)
       }
       if (timeValues.minutes) {
-        timeShort += `${timeValues.minutes}m `
-        timeLong += `${timeValues.minutes} min `
+        timeShort.push(`${timeValues.minutes}m`)
+        timeLong.push(`${timeValues.minutes} min`)
       }
       if (timeValues.seconds) {
-        timeShort += `${timeValues.seconds}s `
-        timeLong += `${timeValues.seconds} sec `
+        timeShort.push(`${timeValues.seconds}s`)
+        timeLong.push(`${timeValues.seconds} sec`)
       }
  
-      timeShort = timeShort.trim()
-      timeLong = timeLong.trim()
+      timeShort = timeShort.slice(0,2).join(' ')
+      timeLong = timeLong.join(' ')
  
       return {
         timeShort,
