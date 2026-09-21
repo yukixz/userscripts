@@ -1,33 +1,28 @@
 // ==UserScript==
-// @name         V2EX Auto Base64 Decoder
+// @name         Universal Base64 Decoder
 // @namespace    https://dazzyd.org/
 // @author       Dazzy Ding
-// @version      0.1.2
-// @description  Automatically decode Base64 in V2EX topics and replies, including dynamically loaded content.
-// @match        *://v2ex.com/t/*
-// @match        *://*.v2ex.com/t/*
+// @version      0.2.1
+// @description  Automatically decode Base64 plain text on all websites, including dynamically loaded content.
+// @match        http://*/*
+// @match        https://*/*
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
 
-// Adapted from V2EX Polish's decodeBase64TopicPage:
-// https://github.com/coolpace/V2EX_Polish/blob/0c42df6a806cbdd37236cfbf42cb7be118305da9/src/contents/helpers.ts
 (function () {
     'use strict';
 
-    const main = document.getElementById('Main');
-    if (!main) return;
-
-    const contentSelector = '.topic_content, .reply_content';
-    const marker = 'data-v2ex-base64';
-    const excludedSelector = `a, script, style, textarea, input, select, button, [contenteditable]:not([contenteditable="false"]), [${marker}], .v2p-decode-block`;
+    if (!document.body) return;
+    const main = document;
+    const marker = 'data-universal-base64';
+    const excludedSelector = `a, script, style, noscript, template, svg, math, textarea, input, select, button, [contenteditable]:not([contenteditable="false"]), [${marker}], .v2p-decode-block`;
     const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
     const copyStates = new WeakMap();
 
-    // Based on V2EX Polish's .v2p-decode and share.tooltip styles.
     const style = document.createElement('style');
     style.textContent = `
-        .v2ex-base64-result {
+        .universal-base64-result {
             --base64-text: #fb923c;
             --base64-background: #fff7ed;
             --base64-tip-text: #1e293b;
@@ -42,15 +37,15 @@
             white-space: pre-wrap;
             overflow-wrap: anywhere;
         }
-        #Wrapper.Night .v2ex-base64-result,
-        .v2p-theme-dark-default .v2ex-base64-result,
-        [data-darkreader-scheme="dark"] .v2ex-base64-result {
+        #Wrapper.Night .universal-base64-result,
+        .v2p-theme-dark-default .universal-base64-result,
+        [data-darkreader-scheme="dark"] .universal-base64-result {
             --base64-text: #fbe090;
             --base64-background: #593600;
             --base64-tip-text: #adbac7;
             --base64-tip-background: #2d333b;
         }
-        .v2ex-base64-result::after {
+        .universal-base64-result::after {
             content: attr(data-copy-label);
             pointer-events: none;
             position: absolute;
@@ -71,9 +66,9 @@
             box-shadow: var(--v2p-widget-shadow, 0 9px 24px -3px rgb(0 0 0 / 6%), 0 4px 8px -1px rgb(0 0 0 / 12%));
             opacity: 0;
         }
-        .v2ex-base64-result:hover::after,
-        .v2ex-base64-result:focus-visible::after,
-        .v2ex-base64-result[data-copy-feedback]::after {
+        .universal-base64-result:hover::after,
+        .universal-base64-result:focus-visible::after,
+        .universal-base64-result[data-copy-feedback]::after {
             opacity: 1;
         }
     `;
@@ -84,7 +79,10 @@
             !/^[A-Za-z0-9+/]+={0,2}$/.test(text)) return null;
 
         try {
-            return decoder.decode(Uint8Array.from(atob(text), char => char.charCodeAt(0)));
+            const decoded = decoder.decode(Uint8Array.from(atob(text), char => char.charCodeAt(0)));
+            // UTF-8 can still contain binary control bytes; allow only tab, LF and CR.
+            if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/u.test(decoded)) return null;
+            return decoded;
         } catch (error) {
             // Invalid Base64 and non-UTF-8 candidates are ordinary page text.
             if (error.name === 'InvalidCharacterError' || error instanceof TypeError) return null;
@@ -116,12 +114,12 @@
         }, duration);
     }
 
-    // Polish can rebuild or clone reply HTML, discarding per-element listeners.
+    // Pages can rebuild or clone content, discarding per-element listeners.
     // Delegate to the stable container and read only the decoded DOM text.
     function handleCopy(event) {
         if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
         const target = event.target instanceof Element ? event.target : event.target.parentElement;
-        const result = target?.closest(`[${marker}] > .v2ex-base64-result`);
+        const result = target?.closest(`[${marker}] > .universal-base64-result`);
         if (!result || !main.contains(result)) return;
         if (event.type === 'keydown') event.preventDefault();
         void copy(result, result.textContent);
@@ -145,7 +143,7 @@
             wrapper.setAttribute(marker, '');
             const result = document.createElement('ins');
             result.textContent = decoded;
-            result.className = 'v2ex-base64-result';
+            result.className = 'universal-base64-result';
             result.dataset.copyLabel = 'Click to copy';
             result.tabIndex = 0;
             result.setAttribute('role', 'button');
@@ -160,7 +158,23 @@
     }
 
     function processContent(content) {
-        const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+        const body = document.body;
+        if (!body || !body.contains(content)) return;
+        if (content.nodeType === Node.TEXT_NODE) {
+            processText(content);
+            return;
+        }
+        if (content.nodeType !== Node.ELEMENT_NODE || content.closest(excludedSelector)) return;
+        // Reject excluded subtrees instead of traversing editors and script contents.
+        const walker = document.createTreeWalker(content,
+            NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+                acceptNode(node) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        return node.matches(excludedSelector) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP;
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
         const nodes = [];
         while (walker.nextNode()) nodes.push(walker.currentNode);
         nodes.forEach(processText);
@@ -171,11 +185,10 @@
     const observerOptions = { childList: true, subtree: true, characterData: true };
 
     function collect(node) {
+        if (node.nodeType !== Node.TEXT_NODE && node.nodeType !== Node.ELEMENT_NODE) return;
         const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
         if (!element || element.closest(excludedSelector)) return;
-        const content = element.closest(contentSelector);
-        if (content) pending.add(content);
-        element.querySelectorAll(contentSelector).forEach(item => pending.add(item));
+        pending.add(node);
     }
 
     const observer = new MutationObserver(records => {
@@ -195,7 +208,10 @@
             observer.disconnect();
             try {
                 for (const content of pending) {
-                    if (main.contains(content)) processContent(content);
+                    // A pending ancestor already covers this subtree.
+                    let parent = content.parentNode;
+                    while (parent && !pending.has(parent)) parent = parent.parentNode;
+                    if (!parent) processContent(content);
                 }
             } finally {
                 pending.clear();
@@ -204,6 +220,6 @@
         });
     });
 
-    main.querySelectorAll(contentSelector).forEach(processContent);
+    processContent(document.body);
     observer.observe(main, observerOptions);
 })();
